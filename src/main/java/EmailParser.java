@@ -1,5 +1,6 @@
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.search.FlagTerm;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,10 +8,6 @@ import java.util.Properties;
 
 public class EmailParser {
     public static void main(String[] args) {
-//        String login = "oleggmanager@yandex.ru";
-//        String password = "testvasya6306";
-//        String apppass = "rtuwmjdndodoavaw";
-//        String host = "imap.yandex.ru";
 
             Properties props = new Properties();
             try (InputStream input = new FileInputStream("C:\\Users\\Albert\\IdeaProjects\\MTpdfparser\\src" +
@@ -20,7 +17,7 @@ public class EmailParser {
             } catch (IOException io) {
 
                 io.printStackTrace();
-                System.out.println("Property file not found");
+                System.err.println("\n"+"Property file not found"+"\n");
 
             }
             String host = props.getProperty("host");
@@ -43,14 +40,24 @@ public class EmailParser {
                 Folder inbox = store.getFolder("INBOX");
                 //открываем её только для чтения
                 inbox.open(Folder.READ_ONLY);
-                System.out.println("Количество сообщений : " + String.valueOf(inbox.getMessageCount()));
-                if (inbox.getMessageCount() == 0)
-                    return;
+                Message messages[] = inbox.search(new FlagTerm(new Flags(
+                        Flags.Flag.SEEN), false));
+                for (int i = 0; i < messages.length; i++) {
+                    System.out.println(messages[i].getMessageNumber());
+                }
+                System.out.println();
+                System.out.println("Общее количество сообщений : " + inbox.getMessageCount()+"\n"
+                        +"Количество непрочитанных сообщений : " + messages.length);
+                if (inbox.getMessageCount() == 0){
+                    System.out.println("Сообщений нет");
+                }
                 String attachFiles = "";
                 String messageContent = "";
                 //получаем последнее сообщение (самое старое будет под номером 1)
                 Message message = inbox.getMessage(9);
+                //Return the content as a Java object
                 Multipart mp = (Multipart) message.getContent();
+                //Return the number of enclosed BodyPart objects
                 int numberOfParts = mp.getCount();
                 for (int partCount = 0; partCount < numberOfParts; partCount++) {
                     MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(partCount);
@@ -73,11 +80,14 @@ public class EmailParser {
                 System.err.println(e.getMessage());
             }
 
-        PdfParser parser = new PdfParser();
-        parser.parsePDF();
+//        PdfParser parser = new PdfParser();
+//        parser.parsePDF();
 
 
 
     }
 }
 
+//    Flags seen = new Flags(Flags.Flag.RECENT);
+//    FlagTerm unseenFlagTerm = new FlagTerm(seen, false);
+//messages = inbox.search(unseenFlagTerm);

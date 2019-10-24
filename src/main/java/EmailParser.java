@@ -49,7 +49,7 @@ public class EmailParser {
 //                    System.out.println(messages[i].getMessageNumber());
 //                }
                 System.out.println("Общее количество сообщений : " + inbox.getMessageCount()+"\n"
-                        +"Количество непрочитанных сообщений : " + messages.length);
+                        +"Количество непрочитанных сообщений : " + messages.length + "\n");
                 if (inbox.getMessageCount() == 0){
                     System.out.println("Сообщений нет");
                 }
@@ -63,17 +63,25 @@ public class EmailParser {
                 for (int partCount = 0; partCount < numberOfParts; partCount++) {
                     MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(partCount);
                     if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+                        //тема письма
                         String messageSubject = message.getSubject();
+                        //дата получения
                         Date messageDate = message.getReceivedDate();
-                        String fileName = part.getFileName();
                         SimpleDateFormat strFormat = new SimpleDateFormat("MM.dd_HH.mm");
-                        String str = strFormat.format(messageDate);
-                        System.out.println(str);
-                        System.out.println(messageSubject + "\n"+ strFormat.format(messageDate) + "\n" + MimeUtility.decodeText(fileName));
-                        String filePath = "C:/Dir/"+ str +".txt";
+                        String receiptTime = strFormat.format(messageDate);
+                        //название вложения
+                        String fileName = MimeUtility.decodeText(part.getFileName());
+                        System.out.println(receiptTime);
+                        System.out.println(messageSubject + "/"+ strFormat.format(messageDate) + "/" + fileName);
+                        String filePath = "C:/Dir/"+ receiptTime +".pdf";
+                        //сохранение PDf на диск
                         part.saveFile(filePath);
+                        //адресс отчета
+                        String reportFilepath = "C:/Dir/test/"+ receiptTime +".txt";
+                        //парсим
                         PdfParser parser = new PdfParser();
-                        parser.setFILE_NAME(filePath);
+                        parser.setFileName(filePath);
+                        parser.setFileNameDest(reportFilepath);
                         parser.parsePDF();
 
                     }

@@ -2,9 +2,7 @@ import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeUtility;
 import javax.mail.search.FlagTerm;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -36,8 +34,8 @@ public class EmailParser {
                 }
             });
 
-            try {
-                Store store = session.getStore();
+            try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+                Store store = session.getStore()) {
                 store.connect(host, login, apppass);
                 //получаем папку с входящими сообщениями
                 Folder inbox = store.getFolder("INBOX");
@@ -45,7 +43,7 @@ public class EmailParser {
                 inbox.open(Folder.READ_ONLY);
                 Message messages[] = inbox.search(new FlagTerm(new Flags(
                         Flags.Flag.SEEN), false));
-//                for (int i = 0; i < messages.length; i++) {
+//                for (int i = 012119; i < messages.length; i++) {
 //                    System.out.println(messages[i].getMessageNumber());
 //                }
                 System.out.println("Общее количество сообщений : " + inbox.getMessageCount()+"\n"
@@ -53,13 +51,15 @@ public class EmailParser {
                 if (inbox.getMessageCount() == 0){
                     System.out.println("Сообщений нет");
                 }
+                System.out.println("Введите номер письма");
+                int postNumber = Integer.parseInt(bufferedReader.readLine());
                 //получаем последнее сообщение (самое старое будет под номером 1)
-                Message message = inbox.getMessage(11);
+                Message message = inbox.getMessage(postNumber);
                 //Return the content as a Java object
                 Multipart mp = (Multipart) message.getContent();
                 //Return the number of enclosed BodyPart objects
                 int numberOfParts = mp.getCount();
-                System.out.println("number of parts "+numberOfParts);
+//                System.out.println("number of parts "+numberOfParts);
                 for (int partCount = 0; partCount < numberOfParts; partCount++) {
                     MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(partCount);
                     if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
@@ -71,18 +71,19 @@ public class EmailParser {
                         String receiptTime = strFormat.format(messageDate);
                         //название вложения
                         String fileName = MimeUtility.decodeText(part.getFileName());
-                        System.out.println(receiptTime);
-                        System.out.println(messageSubject + "/"+ strFormat.format(messageDate) + "/" + fileName);
-                        String filePath = "C:/Dir/"+ receiptTime +".pdf";
+//                        System.out.println(receiptTime);
+//                        System.out.println(messageSubject + "/"+ strFormat.format(messageDate) + "/" + fileName);
+                        String filePath = "C:/Dir/оригPDF/"+ receiptTime +".pdf";
                         //сохранение PDf на диск
                         part.saveFile(filePath);
                         //адресс отчета
-                        String reportFilepath = "C:/Dir/test/"+ receiptTime +".txt";
+                        String reportFilepath = "C:/Dir/Отчет/"+ receiptTime +".txt";
                         //парсим
                         PdfParser parser = new PdfParser();
                         parser.setFileName(filePath);
                         parser.setFileNameDest(reportFilepath);
                         parser.parsePDF();
+                        System.out.println("Отчет сформирован");
 
                     }
                 }

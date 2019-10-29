@@ -1,10 +1,10 @@
+import org.w3c.dom.ls.LSOutput;
+
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeUtility;
 import javax.mail.search.FlagTerm;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
@@ -30,8 +30,17 @@ public class EmailParser {
 
             if (messages.length == 0){
                 System.out.println("Необработанных сообщений нет");
+                return;
             }
-            for (int i = 1, j = messages.length; i <= j ; j--) {
+            StringBuilder builder = new StringBuilder();
+            System.out.print("Ждите");
+            for (int i = 0; i < 3; i++) {
+                Thread.sleep(900);
+                System.out.print(".");
+            }
+            System.out.println();
+
+            for (int i = inbox.getMessageCount() - messages.length+1, j = inbox.getMessageCount(); i <= j ; j--) {
                 Message message = inbox.getMessage(j);
                 //Return the content as a Java object
                 Multipart mp = (Multipart) message.getContent();
@@ -59,15 +68,6 @@ public class EmailParser {
                     }
                 }
             }
-//            System.out.println("Общее количество сообщений : " + inbox.getMessageCount() + "\n"
-//                    + "Количество непрочитанных сообщений : " + messages.length + "\n");
-//            if (inbox.getMessageCount() == 0) {
-//                System.out.println("Сообщений нет");
-//            }
-//            System.out.println("Введите номер письма");
-//            int postNumber = Integer.parseInt(bufferedReader.readLine());
-            //получаем последнее сообщение (самое старое будет под номером 1)
-
         } catch (NoSuchProviderException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -77,19 +77,20 @@ public class EmailParser {
         } catch (IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
+        }catch (InterruptedException e){
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
         Properties props = new Properties();
-        try (InputStream input = new FileInputStream("C:\\Users\\Albert\\IdeaProjects\\MTpdfparser\\src" +
-                "\\main\\resources\\config.properties")) {
+        try (InputStream input = new FileInputStream("C:\\PDF parser\\config.properties")) {
             props.load(input);
 
         } catch (IOException io) {
-
-            io.printStackTrace();
-            System.err.println("\n" + "Property file not found" + "\n");
+            System.err.println("\n" + "Файл с настройками не найден, убедитесь в том что в папке с программой присутствует файл config.properties" + "\n");
+            return;
 
         }
         String host = props.getProperty("host");
@@ -98,9 +99,5 @@ public class EmailParser {
 
         EmailParser parser = new EmailParser();
         parser.parsePDF(host, login, password, props);
-
     }
 }
-//    Flags seen = new Flags(Flags.Flag.RECENT);
-//    FlagTerm unseenFlagTerm = new FlagTerm(seen, false);
-//messages = inbox.search(unseenFlagTerm);

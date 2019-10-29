@@ -3,3 +3,4 @@ config.properties
 *.iml
 .target/
 *.class
+*.properties

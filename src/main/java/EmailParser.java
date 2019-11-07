@@ -1,5 +1,3 @@
-import org.w3c.dom.ls.LSOutput;
-
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.search.FlagTerm;
@@ -19,8 +17,7 @@ public class EmailParser {
             }
         });
 
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-             Store store = session.getStore()) {
+        try (Store store = session.getStore()) {
             store.connect(host, login, password);
             Folder inbox = store.getFolder("INBOX");
             inbox.open(Folder.READ_WRITE);
@@ -32,13 +29,6 @@ public class EmailParser {
                 System.out.println("Необработанных сообщений нет");
                 return;
             }
-            StringBuilder builder = new StringBuilder();
-            System.out.print("Ждите");
-            for (int i = 0; i < 3; i++) {
-                Thread.sleep(900);
-                System.out.print(".");
-            }
-            System.out.println();
 
             for (int i = inbox.getMessageCount() - messages.length+1, j = inbox.getMessageCount(); i <= j ; j--) {
                 Message message = inbox.getMessage(j);
@@ -77,13 +67,16 @@ public class EmailParser {
         } catch (IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
-        }catch (InterruptedException e){
-            System.err.println(e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        System.out.print("Идет загрузка, подождите");
+        for (int i = 0; i < 3; i++) {
+            Thread.sleep(900);
+            System.out.print(".");
+        }
+        System.out.println("\n");
         Properties props = new Properties();
         try (InputStream input = new FileInputStream("C:\\PDF parser\\config.properties")) {
             props.load(input);
